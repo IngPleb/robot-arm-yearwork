@@ -34,8 +34,8 @@ color_sensor = ColorSensor(Port.S3)
 
 # As for the ration… The big gear has 36 teeth but the small gear probably has 12 (or 20 we can check). So the ration is 36/12 = 3
 basePart = BasePart(base_motor, base_touch_sensor, 36/12)
-shoulderPart = ShoulderPart(shoulder_motor, shoulder_sonic_sensor, 36/12)
-elbowPart = ElbowPart(elbow_motor, 36/12)
+shoulderPart = ShoulderPart(shoulder_motor, shoulder_sonic_sensor, (40 /16) * (40 /16))
+elbowPart = ElbowPart(elbow_motor, 40 / 8)
 gripperPart = GripperPart(gripper_motor)
 
 # Calibrate the parts
