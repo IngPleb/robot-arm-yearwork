@@ -1,14 +1,19 @@
+from pybricks.ev3devices import Motor, TouchSensor, UltrasonicSensor, ColorSensor
+from pybricks.hubs import EV3Brick
+
 from modes.Mode import Mode
 from parts.BasePart import BasePart
 from parts.ElbowPart import ElbowPart
 from parts.GripperPart import GripperPart
 from parts.ShoulderPart import ShoulderPart
 from systems.ColorDetectionSystem import ColorDetectionSystem
-from pybricks.ev3devices import Motor, TouchSensor, UltrasonicSensor, ColorSensor
-from pybricks.hubs import EV3Brick
+from systems.MoveSystem import MoveSystem
+
 
 class AutomaticMode(Mode):
-    def __init__(self, ev3: EV3Brick, base_motor: Motor, shoulder_motor: Motor, elbow_motor: Motor, gripper_motor: Motor, base_touch_sensor: TouchSensor, shoulder_sonic_sensor: UltrasonicSensor, color_sensor: ColorSensor):
+    def __init__(self, ev3: EV3Brick, base_motor: Motor, shoulder_motor: Motor, elbow_motor: Motor,
+                 gripper_motor: Motor, base_touch_sensor: TouchSensor, shoulder_sonic_sensor: UltrasonicSensor,
+                 color_sensor: ColorSensor):
         super().__init__("Automatic")
         self.ev3 = ev3
         self.base_motor = base_motor
@@ -26,7 +31,7 @@ class AutomaticMode(Mode):
         shoulderPart = ShoulderPart(self.shoulder_motor, self.shoulder_sonic_sensor, (40 / 16) * (40 / 16), length=8.4)
         elbowPart = ElbowPart(self.elbow_motor, 40 / 8, length=15)
         gripperPart = GripperPart(self.gripper_motor)
-        
+
         # Calibrate the parts
         # The order of calibration is important.
         # It may be subject to change in the future.
@@ -36,6 +41,4 @@ class AutomaticMode(Mode):
 
         # Systems initialization
         color_detection_system = ColorDetectionSystem(self.color_sensor)
-
-        basePart.move_to_angle(-180 * 4)
-
+        move_system = MoveSystem(basePart, shoulderPart, elbowPart, gripperPart)

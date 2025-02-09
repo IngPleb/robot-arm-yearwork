@@ -11,7 +11,7 @@ class ShoulderPart(ArmPart):
         self.sonic_sensor = sonic_sensor
         self.ratio = ratio
         self.length = length
-        
+
         self.motor.hold()
 
     def calibrate(self):
@@ -25,11 +25,16 @@ class ShoulderPart(ArmPart):
                 tick_count += 1
 
             self.motor.run(calibration_speed)
-            
+
             wait(10)
-        
+
         self.motor.hold()
         self.motor.reset_angle(0)
         print("Calibration of " + self.name + " complete")
         return True
 
+    def move_to_angle(self, angle):
+        self.motor.run_target(100, angle * self.ratio)
+        self.motor.hold()
+        print("Shoulder moved to angle: " + str(angle))
+        return True

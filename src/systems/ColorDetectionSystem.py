@@ -2,7 +2,6 @@ from pybricks.ev3devices import ColorSensor
 
 
 class ColorDetectionSystem:
-    
     # The colors are really messed up coming from the sensor. It is basically guessing between yellow and red
     # Use the color calibration mode to adjust the values
     COLORS = {
@@ -19,7 +18,6 @@ class ColorDetectionSystem:
     def detect_color(self) -> str:
         color = self.color_sensor.rgb()
         return self.get_closest_color(color)
-
 
     def get_closest_color(self, color: tuple) -> str:
         closest_color = None

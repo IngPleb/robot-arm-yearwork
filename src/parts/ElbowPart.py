@@ -25,23 +25,29 @@ class ElbowPart(ArmPart):
         while tick_count < TARGET_TICKS:
             self.motor.run(SPEED)
             wait(10)
-            
+
             current_angle = self.motor.angle()
             angle_difference = abs(current_angle - last_angle)
-            
+
             if angle_difference < ANGLE_THRESHOLD:
                 tick_count += 1
             else:
                 tick_count = 0
-                
+
             last_angle = current_angle
 
         self.motor.hold()
 
         # Remove tension from the motor
         self.motor.run_angle(SPEED, TENSION_ANGLE)
-        
+
         # Reset angle to 0
         self.motor.reset_angle(0)
-        
+
         print("Calibration of " + self.name + " complete")
+
+    def move_to_angle(self, angle):
+        self.motor.run_target(100, angle * self.ratio)
+        self.motor.hold()
+        print("Elbow moved to angle: " + str(angle))
+        return True

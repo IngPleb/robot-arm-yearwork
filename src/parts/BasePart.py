@@ -10,7 +10,7 @@ class BasePart(ArmPart):
         self.motor = motor
         self.touchSensor = touch_sensor
         self.ration = ration
-        
+
         motor.hold()
 
     def calibrate(self):

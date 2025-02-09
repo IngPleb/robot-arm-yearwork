@@ -1,8 +1,9 @@
-from modes.Mode import Mode
 from pybricks.ev3devices import Motor
 from pybricks.hubs import EV3Brick
 from pybricks.parameters import Button
 from pybricks.tools import wait
+
+from modes.Mode import Mode
 
 
 class ManualMode(Mode):
