@@ -1,20 +1,13 @@
 #!/usr/bin/env pybricks-micropython
 
-from pybricks.ev3devices import Motor
+from pybricks.ev3devices import ColorSensor
 from pybricks.hubs import EV3Brick
 from pybricks.parameters import Port
 from pybricks.tools import wait
 
 ev3 = EV3Brick()
-motor = Motor(Port.D)
+color_sensor = ColorSensor(Port.S3)
 
-# Run the motor at speed 100
-motor.run(-100)
-
-# Let it run for 2 seconds
-wait(20000)
-
-# Stop the motor
-motor.hold()
-
-print("Test complete")
+while True:
+    print(color_sensor.rgb())
+    wait(1000)
