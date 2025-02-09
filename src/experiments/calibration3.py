@@ -6,7 +6,7 @@ from pybricks.parameters import Port
 from pybricks.tools import wait
 
 ev3 = EV3Brick()
-motor = Motor(Port.D)
+motor = Motor(Port.B)
 touch_sensor = TouchSensor(Port.S4)
 motor.hold()
 

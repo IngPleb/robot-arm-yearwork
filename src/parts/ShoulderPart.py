@@ -5,11 +5,12 @@ from parts.ArmPart import ArmPart
 
 
 class ShoulderPart(ArmPart):
-    def __init__(self, motor: Motor, sonic_sensor: UltrasonicSensor, ratio):
+    def __init__(self, motor: Motor, sonic_sensor: UltrasonicSensor, ratio, length: float):
         super().__init__('Shoulder')
         self.motor = motor
         self.sonic_sensor = sonic_sensor
         self.ratio = ratio
+        self.length = length
         
         self.motor.hold()
 

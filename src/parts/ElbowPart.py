@@ -5,18 +5,19 @@ from parts.ArmPart import ArmPart
 
 
 class ElbowPart(ArmPart):
-    def __init__(self, motor: Motor, ratio: float):
+    def __init__(self, motor: Motor, ratio: float, length: float):
         super().__init__('Elbow')
         self.motor = motor
         self.ratio = ratio
+        self.length = length
         self.motor.hold()
 
     def calibrate(self):
         # Calibration parameters
-        SPEED = -200
+        SPEED = 400
         ANGLE_THRESHOLD = 6
-        TARGET_TICKS = 16
-        TENSION_ANGLE = -500
+        TARGET_TICKS = 25
+        TENSION_ANGLE = -400
 
         tick_count = 0
         last_angle = self.motor.angle()

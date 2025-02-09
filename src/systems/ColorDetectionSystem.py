@@ -2,11 +2,13 @@ from pybricks.ev3devices import ColorSensor
 
 
 class ColorDetectionSystem:
+    
+    # The colors are really messed up coming from the sensor. It is basically guessing between yellow and red
     COLORS = {
-        "yellow": (0, 100, 100),
-        "red": (255, 0, 0),
-        "blue": (255, 255, 0),
-        "green": (0, 170, 0),
+        "yellow": (14, 9, 0),
+        "red": (22, 0, 0),
+        "blue": (0, 0, 30),
+        "green": (2, 8, 3),
     }
 
     def __init__(self, color_sensor: ColorSensor):

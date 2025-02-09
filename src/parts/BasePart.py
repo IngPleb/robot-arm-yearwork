@@ -15,7 +15,6 @@ class BasePart(ArmPart):
 
     def calibrate(self):
         calibration_speed = 100
-        print("Calibrating Base")
 
         while not self.touchSensor.pressed():
             self.motor.run(calibration_speed)
