@@ -9,15 +9,25 @@ and starts the main navigation loop.
 """
 from pybricks.ev3devices import Motor, TouchSensor, UltrasonicSensor, ColorSensor
 from pybricks.hubs import EV3Brick
-from pybricks.parameters import Port
+from pybricks.parameters import Port, Button
+from pybricks.tools import wait
 
-from parts.BasePart import BasePart
-from parts.ElbowPart import ElbowPart
-from parts.GripperPart import GripperPart
-from parts.ShoulderPart import ShoulderPart
-from systems.ColorDetectionSystem import ColorDetectionSystem
+from modes.AutomaticMode import AutomaticMode
+from modes.ColorCalibrationMode import ColorCalibrationMethod
+from modes.ManualMode import ManualMode
 
 ev3 = EV3Brick()
+
+# Utils methods
+def get_input() -> Button:
+    pressed_inputs = []
+    while len(pressed_inputs) == 0:
+        pressed_inputs = ev3.buttons.pressed()
+        wait(10)
+
+    return pressed_inputs[0]
+
+# Main entry point
 
 # Initialize the motors
 base_motor = Motor(Port.D)
@@ -30,24 +40,40 @@ base_touch_sensor = TouchSensor(Port.S4)
 shoulder_sonic_sensor = UltrasonicSensor(Port.S1)
 color_sensor = ColorSensor(Port.S3)
 
-# Initialize the parts
+# Now we decide what mode we want the robot to run in
+# 1. Manual mode – control each joint individually for testing
+# 2. Color calibration mode – the robot will help us calibrate the color sensor
+# 3. Automatic mode – the robot will perform the given routine for sorting cubes and building the ordered stack
+ev3.screen.print("Select mode:\n\nLEFT: Manual\nRIGHT: Color Calibration\nCENTER: Automatic")
+print("Select mode:\n\nLEFT: Manual\nRIGHT: Color Calibration\nCENTER: Automatic\n")
+given_input = get_input()
 
-# As for the ration… The big gear has 36 teeth but the small gear probably has 12 (or 20 we can check). So the ration is 36/12 = 3
-basePart = BasePart(base_motor, base_touch_sensor, 4)
-shoulderPart = ShoulderPart(shoulder_motor, shoulder_sonic_sensor, (40 /16) * (40 /16), length=8.4)
-elbowPart = ElbowPart(elbow_motor, 40 / 8, length=15)
-gripperPart = GripperPart(gripper_motor)
+# Manual mode
+if given_input == Button.LEFT:
+    print("Manual mode engaged")
+    manual_mode = ManualMode(ev3, base_motor, shoulder_motor, elbow_motor)
+    manual_mode.run()
 
-# Calibrate the parts
-# The order of calibration is important.
-# It may be subject to change in the future.
-#elbowPart.calibrate()
-#shoulderPart.calibrate()
-#basePart.calibrate()
+# Color calibration mode
+elif given_input == Button.RIGHT:
+    print("Color calibration mode engaged")
+    color_calibration_mode = ColorCalibrationMethod(ev3, color_sensor)
+    color_calibration_mode.run()
 
-# Systems initialization
-color_detection_system = ColorDetectionSystem(color_sensor)
+# Automatic mode
+elif given_input == Button.CENTER:
+    print("Automatic mode engaged")
+    automatic_mode = AutomaticMode(ev3 ,base_motor, shoulder_motor, elbow_motor, gripper_motor, base_touch_sensor, shoulder_sonic_sensor, color_sensor)
+    automatic_mode.run()
+    
+# Invalid input
+else:
+    ev3.screen.clear()
+    ev3.screen.print("Invalid input. Exiting...")
+    print("Invalid input. Exiting...")
+    ev3.speaker.beep(100, 500)
 
-#basePart.move_to_angle(-180 * 4)
+ev3.screen.clear()
+ev3.screen.print("Program complete!")
+print("Program complete!")
 
-print(color_detection_system.detect_color())

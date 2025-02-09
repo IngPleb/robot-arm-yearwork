@@ -4,9 +4,10 @@ from pybricks.ev3devices import ColorSensor
 class ColorDetectionSystem:
     
     # The colors are really messed up coming from the sensor. It is basically guessing between yellow and red
+    # Use the color calibration mode to adjust the values
     COLORS = {
         "yellow": (14, 9, 0),
-        "red": (22, 0, 0),
+        "red": (18, 0, 0),
         "blue": (0, 0, 30),
         "green": (2, 8, 3),
     }
