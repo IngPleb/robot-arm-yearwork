@@ -10,22 +10,13 @@ and starts the main navigation loop.
 from pybricks.ev3devices import Motor, TouchSensor, UltrasonicSensor, ColorSensor
 from pybricks.hubs import EV3Brick
 from pybricks.parameters import Port, Button
-from pybricks.tools import wait
 
 from modes.AutomaticMode import AutomaticMode
 from modes.ColorCalibrationMode import ColorCalibrationMethod
 from modes.ManualMode import ManualMode
+from utils.input import get_input
 
 ev3 = EV3Brick()
-
-# Utils methods
-def get_input() -> Button:
-    pressed_inputs = []
-    while len(pressed_inputs) == 0:
-        pressed_inputs = ev3.buttons.pressed()
-        wait(10)
-
-    return pressed_inputs[0]
 
 # Main entry point
 
@@ -46,7 +37,7 @@ color_sensor = ColorSensor(Port.S3)
 # 3. Automatic mode – the robot will perform the given routine for sorting cubes and building the ordered stack
 ev3.screen.print("Select mode:\n\nLEFT: Manual\nRIGHT: Color Calibration\nCENTER: Automatic")
 print("Select mode:\n\nLEFT: Manual\nRIGHT: Color Calibration\nCENTER: Automatic\n")
-given_input = get_input()
+given_input = get_input(ev3)
 
 # Manual mode
 if given_input == Button.LEFT:
@@ -63,9 +54,10 @@ elif given_input == Button.RIGHT:
 # Automatic mode
 elif given_input == Button.CENTER:
     print("Automatic mode engaged")
-    automatic_mode = AutomaticMode(ev3 ,base_motor, shoulder_motor, elbow_motor, gripper_motor, base_touch_sensor, shoulder_sonic_sensor, color_sensor)
+    automatic_mode = AutomaticMode(ev3, base_motor, shoulder_motor, elbow_motor, gripper_motor, base_touch_sensor,
+                                   shoulder_sonic_sensor, color_sensor)
     automatic_mode.run()
-    
+
 # Invalid input
 else:
     ev3.screen.clear()
@@ -76,4 +68,3 @@ else:
 ev3.screen.clear()
 ev3.screen.print("Program complete!")
 print("Program complete!")
-

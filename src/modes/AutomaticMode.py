@@ -28,8 +28,8 @@ class AutomaticMode(Mode):
         print("Running Automatic Mode")
         # Initialize the parts
         basePart = BasePart(self.base_motor, self.base_touch_sensor, 4)
-        shoulderPart = ShoulderPart(self.shoulder_motor, self.shoulder_sonic_sensor, (40 / 16) * (40 / 16), length=8.4)
-        elbowPart = ElbowPart(self.elbow_motor, 40 / 8, length=15)
+        shoulderPart = ShoulderPart(self.shoulder_motor, self.shoulder_sonic_sensor, (40 / 16) * (40 / 16), length=8)
+        elbowPart = ElbowPart(self.elbow_motor, 40 / 8, length=13.5)
         gripperPart = GripperPart(self.gripper_motor)
 
         # Calibrate the parts
@@ -41,4 +41,6 @@ class AutomaticMode(Mode):
 
         # Systems initialization
         color_detection_system = ColorDetectionSystem(self.color_sensor)
-        move_system = MoveSystem(basePart, shoulderPart, elbowPart, gripperPart)
+        move_system = MoveSystem(basePart, shoulderPart, elbowPart)
+
+        move_system.move(3, 0, 0)

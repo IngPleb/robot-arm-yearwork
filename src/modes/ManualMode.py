@@ -4,9 +4,13 @@ from pybricks.parameters import Button
 from pybricks.tools import wait
 
 from modes.Mode import Mode
+from utils.input import get_input
 
 
 class ManualMode(Mode):
+    min_page = 0
+    max_page = 1
+
     def __init__(self, ev3: EV3Brick, base_motor: Motor, shoulder_motor: Motor, elbow_motor: Motor):
         super().__init__("Manual")
         self.ev3 = ev3
@@ -16,51 +20,79 @@ class ManualMode(Mode):
         self.speed = 200
         self.base_direction = 1
 
+        self.pages = {
+            0: {
+                "instructions": "Manual Mode\n\nUP/DOWN: Elbow\nLEFT/RIGHT: Shoulder\nCENTER: Switch page",
+                "actions": self.page_0_actions
+            },
+            1: {
+                "instructions": "Manual Mode\n\nLEFT: Base\nRIGHT: Base\nCENTER: Switch page",
+                "actions": self.page_1_actions
+            }
+        }
+
+    def page_0_actions(self, pressed_button):
+        if pressed_button == Button.LEFT:
+            while Button.LEFT in self.ev3.buttons.pressed():
+                self.shoulder_motor.run(-self.speed)
+                wait(10)
+            self.shoulder_motor.hold()
+        elif pressed_button == Button.RIGHT:
+            while Button.RIGHT in self.ev3.buttons.pressed():
+                self.shoulder_motor.run(self.speed)
+                wait(10)
+            self.shoulder_motor.hold()
+        elif pressed_button == Button.UP:
+            while Button.UP in self.ev3.buttons.pressed():
+                self.elbow_motor.run(self.speed)
+                wait(10)
+            self.elbow_motor.hold()
+        elif pressed_button == Button.DOWN:
+            while Button.DOWN in self.ev3.buttons.pressed():
+                self.elbow_motor.run(-self.speed)
+                wait(10)
+            self.elbow_motor.hold()
+
+    def page_1_actions(self, pressed_button):
+        if pressed_button == Button.LEFT:
+            while Button.LEFT in self.ev3.buttons.pressed():
+                self.base_motor.run(-self.speed)
+                wait(10)
+            self.base_motor.hold()
+        elif pressed_button == Button.RIGHT:
+            while Button.RIGHT in self.ev3.buttons.pressed():
+                self.base_motor.run(self.speed)
+                wait(10)
+            self.base_motor.hold()
+
     def run(self):
         print("Running Manual Mode")
         self.ev3.screen.clear()
-        self.ev3.screen.print("Manual Mode\n\nUP/DOWN: Elbow\nLEFT/RIGHT: Shoulder\nCENTER: Base")
+        self.ev3.screen.print(self.pages[0]["instructions"])
         self.ev3.speaker.beep()
-        print("Manual Mode\n\nUP/DOWN: Elbow\nLEFT/RIGHT: Shoulder\nCENTER: Base")
+        print(self.pages[0]["instructions"])
 
+        current_page = 0
+
+        # Main input loop
         while True:
-            pressed_buttons = self.ev3.buttons.pressed()
+            pressed_button = get_input(self.ev3)
 
-            # Handle shoulder movement with LEFT/RIGHT
-            if Button.LEFT in pressed_buttons:
-                while Button.LEFT in self.ev3.buttons.pressed():
-                    self.shoulder_motor.run(-self.speed)
-                    wait(10)
-                self.shoulder_motor.hold()
-            elif Button.RIGHT in pressed_buttons:
-                while Button.RIGHT in self.ev3.buttons.pressed():
-                    self.shoulder_motor.run(self.speed)
-                    wait(10)
-                self.shoulder_motor.hold()
+            # Execute actions for the current page
+            self.pages[current_page]["actions"](pressed_button)
 
-            # Handle elbow movement with UP/DOWN
-            elif Button.UP in pressed_buttons:
-                while Button.UP in self.ev3.buttons.pressed():
-                    self.elbow_motor.run(self.speed)
-                    wait(10)
-                self.elbow_motor.hold()
-            elif Button.DOWN in pressed_buttons:
-                while Button.DOWN in self.ev3.buttons.pressed():
-                    self.elbow_motor.run(-self.speed)
-                    wait(10)
-                self.elbow_motor.hold()
+            if pressed_button == Button.CENTER:
+                current_page = (current_page + 1) % len(self.pages)
+                self.ev3.screen.clear()
+                self.ev3.screen.print(self.pages[current_page]["instructions"])
+                self.ev3.speaker.beep()
 
-            # Handle base rotation with CENTER
-            elif Button.CENTER in pressed_buttons:
-                while Button.CENTER in self.ev3.buttons.pressed():
-                    self.base_motor.run(self.speed * self.base_direction)
-                    wait(10)
-                self.base_direction *= -1  # Switch direction
-                self.base_motor.hold()
-            else:
-                # Hold all motors when no buttons pressed
-                self.shoulder_motor.hold()
-                self.elbow_motor.hold()
-                self.base_motor.hold()
+                # Safety wait so the brick has time to update the list accordingly
+                wait(250)
+
+            # Hold all motors when no buttons pressed
+            self.shoulder_motor.hold()
+            self.elbow_motor.hold()
+            self.base_motor.hold()
 
             wait(10)  # Small delay to prevent excessive CPU usage
