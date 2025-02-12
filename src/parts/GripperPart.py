@@ -5,7 +5,7 @@ from parts.ArmPart import ArmPart
 
 class GripperPart(ArmPart):
     def __init__(self, motor: Motor):
-        super().__init__("Gripper")
+        super().__init__("Gripper", motor)
         self.motor = motor
 
     def grab(self):

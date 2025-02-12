@@ -1,9 +1,12 @@
-from pybricks.ev3devices import Motor
+from pybricks.ev3devices import Motor, UltrasonicSensor, TouchSensor
 from pybricks.hubs import EV3Brick
 from pybricks.parameters import Button
 from pybricks.tools import wait
 
 from modes.Mode import Mode
+from parts.BasePart import BasePart
+from parts.ElbowPart import ElbowPart
+from parts.ShoulderPart import ShoulderPart
 from utils.input import get_input
 
 
@@ -11,7 +14,8 @@ class ManualMode(Mode):
     min_page = 0
     max_page = 1
 
-    def __init__(self, ev3: EV3Brick, base_motor: Motor, shoulder_motor: Motor, elbow_motor: Motor):
+    def __init__(self, ev3: EV3Brick, base_motor: Motor, shoulder_motor: Motor, elbow_motor: Motor,
+                 sonic_sensor: UltrasonicSensor, touch_sensor: TouchSensor, ratios):
         super().__init__("Manual")
         self.ev3 = ev3
         self.base_motor = base_motor
@@ -20,13 +24,19 @@ class ManualMode(Mode):
         self.speed = 200
         self.base_direction = 1
 
+        # Creating parts for the manual mode
+        self.base_part = BasePart(self.base_motor, ratio=ratios["base"], touch_sensor=touch_sensor)
+        self.shoulder_part = ShoulderPart(self.shoulder_motor, sonic_sensor=sonic_sensor, ratio=ratios["shoulder"],
+                                          length=8)
+        self.elbow_part = ElbowPart(self.elbow_motor, ratio=ratios["elbow"], length=13.5)
+
         self.pages = {
             0: {
                 "instructions": "Manual Mode\n\nUP/DOWN: Elbow\nLEFT/RIGHT: Shoulder\nCENTER: Switch page",
                 "actions": self.page_0_actions
             },
             1: {
-                "instructions": "Manual Mode\n\nLEFT: Base\nRIGHT: Base\nCENTER: Switch page",
+                "instructions": "Manual Mode\n\nLEFT: Base\nRIGHT: Base\nUP: Calibrate\nDOWN: ANGLES\nCENTER: Switch page",
                 "actions": self.page_1_actions
             }
         }
@@ -44,12 +54,12 @@ class ManualMode(Mode):
             self.shoulder_motor.hold()
         elif pressed_button == Button.UP:
             while Button.UP in self.ev3.buttons.pressed():
-                self.elbow_motor.run(self.speed)
+                self.elbow_motor.run(-self.speed)
                 wait(10)
             self.elbow_motor.hold()
         elif pressed_button == Button.DOWN:
             while Button.DOWN in self.ev3.buttons.pressed():
-                self.elbow_motor.run(-self.speed)
+                self.elbow_motor.run(self.speed)
                 wait(10)
             self.elbow_motor.hold()
 
@@ -64,6 +74,33 @@ class ManualMode(Mode):
                 self.base_motor.run(self.speed)
                 wait(10)
             self.base_motor.hold()
+
+        # Calibrate the robot
+        elif pressed_button == Button.UP:
+            self.base_part.calibrate()
+            self.elbow_part.calibrate()
+
+            # Safety wait so the motors have time to debounce
+            wait(250)
+            self.shoulder_part.calibrate()
+            # Safety wait so the brick has time to update the list accordingly & motors to debounce
+            wait(500)
+
+        # Get part angles
+        elif pressed_button == Button.DOWN:
+            # Console
+            print("Angles:")
+            print("Base: " + str(self.base_part.get_angle()))
+            print("Shoulder: " + str(self.shoulder_part.get_angle()))
+            print("Elbow: " + str(self.elbow_part.get_angle()))
+            print("|--------------|")
+
+            # Screen
+            self.ev3.screen.clear()
+            self.ev3.screen.print("-----\nAngles:\n")
+            self.ev3.screen.print("Base:\n" + str(self.base_part.get_angle()))
+            self.ev3.screen.print("Shoulder:\n" + str(self.shoulder_part.get_angle()))
+            self.ev3.screen.print("Elbow:\n" + str(self.elbow_part.get_angle()))
 
     def run(self):
         print("Running Manual Mode")

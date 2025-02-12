@@ -16,6 +16,14 @@ from modes.ColorCalibrationMode import ColorCalibrationMethod
 from modes.ManualMode import ManualMode
 from utils.input import get_input
 
+RATIOS = {
+    "base": 4,
+    "shoulder": (40 / 16) * (40 / 16),
+    "elbow": 40 / 8
+}
+
+# Execution
+
 ev3 = EV3Brick()
 
 # Main entry point
@@ -42,7 +50,8 @@ given_input = get_input(ev3)
 # Manual mode
 if given_input == Button.LEFT:
     print("Manual mode engaged")
-    manual_mode = ManualMode(ev3, base_motor, shoulder_motor, elbow_motor)
+    manual_mode = ManualMode(ev3, base_motor, shoulder_motor, elbow_motor, shoulder_sonic_sensor, base_touch_sensor,
+                             RATIOS)
     manual_mode.run()
 
 # Color calibration mode
@@ -55,7 +64,7 @@ elif given_input == Button.RIGHT:
 elif given_input == Button.CENTER:
     print("Automatic mode engaged")
     automatic_mode = AutomaticMode(ev3, base_motor, shoulder_motor, elbow_motor, gripper_motor, base_touch_sensor,
-                                   shoulder_sonic_sensor, color_sensor)
+                                   shoulder_sonic_sensor, color_sensor, RATIOS)
     automatic_mode.run()
 
 # Invalid input

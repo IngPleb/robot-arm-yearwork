@@ -13,7 +13,7 @@ from systems.MoveSystem import MoveSystem
 class AutomaticMode(Mode):
     def __init__(self, ev3: EV3Brick, base_motor: Motor, shoulder_motor: Motor, elbow_motor: Motor,
                  gripper_motor: Motor, base_touch_sensor: TouchSensor, shoulder_sonic_sensor: UltrasonicSensor,
-                 color_sensor: ColorSensor):
+                 color_sensor: ColorSensor, ratios):
         super().__init__("Automatic")
         self.ev3 = ev3
         self.base_motor = base_motor
@@ -23,13 +23,14 @@ class AutomaticMode(Mode):
         self.base_touch_sensor = base_touch_sensor
         self.shoulder_sonic_sensor = shoulder_sonic_sensor
         self.color_sensor = color_sensor
+        self.ratios = ratios
 
     def run(self):
         print("Running Automatic Mode")
         # Initialize the parts
-        basePart = BasePart(self.base_motor, self.base_touch_sensor, 4)
-        shoulderPart = ShoulderPart(self.shoulder_motor, self.shoulder_sonic_sensor, (40 / 16) * (40 / 16), length=8)
-        elbowPart = ElbowPart(self.elbow_motor, 40 / 8, length=13.5)
+        basePart = BasePart(self.base_motor, self.base_touch_sensor, self.ratios["base"])
+        shoulderPart = ShoulderPart(self.shoulder_motor, self.shoulder_sonic_sensor, self.ratios["shoulder"], length=8)
+        elbowPart = ElbowPart(self.elbow_motor, self.ratios["elbow"], length=13.5)
         gripperPart = GripperPart(self.gripper_motor)
 
         # Calibrate the parts

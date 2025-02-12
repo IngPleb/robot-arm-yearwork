@@ -6,11 +6,8 @@ from parts.ArmPart import ArmPart
 
 class ElbowPart(ArmPart):
     def __init__(self, motor: Motor, ratio: float, length: float):
-        super().__init__('Elbow')
-        self.motor = motor
-        self.ratio = ratio
+        super().__init__('Elbow', motor, ratio)
         self.length = length
-        self.motor.hold()
 
     def calibrate(self):
         # Calibration parameters
@@ -41,13 +38,10 @@ class ElbowPart(ArmPart):
         # Remove tension from the motor
         self.motor.run_angle(SPEED, TENSION_ANGLE)
 
+        # Wait for the motor to debounce
+        wait(250)
+
         # Reset angle to 0
         self.motor.reset_angle(0)
 
         print("Calibration of " + self.name + " complete")
-
-    def move_to_angle(self, angle):
-        self.motor.run_target(100, angle * self.ratio)
-        self.motor.hold()
-        print("Elbow moved to angle: " + str(angle))
-        return True
