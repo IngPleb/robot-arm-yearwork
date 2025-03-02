@@ -11,16 +11,11 @@ from pybricks.ev3devices import Motor, TouchSensor, UltrasonicSensor, ColorSenso
 from pybricks.hubs import EV3Brick
 from pybricks.parameters import Port, Button
 
+from constants import RATIOS
 from modes.AutomaticMode import AutomaticMode
 from modes.ColorCalibrationMode import ColorCalibrationMethod
 from modes.ManualMode import ManualMode
 from utils.input import get_input
-
-RATIOS = {
-    "base": 4,
-    "shoulder": (40 / 16) * (40 / 16),
-    "elbow": 40 / 8
-}
 
 # Execution
 
