@@ -12,7 +12,7 @@ class ColorDetectionSystem:
     }
 
     def __init__(self, color_sensor: ColorSensor):
-        print("Initializing ColorDetectionSystem")
+        print("[ColorDetectionSystem] Initializing")
         self.color_sensor = color_sensor
 
     def detect_color(self) -> str:

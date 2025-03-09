@@ -39,25 +39,25 @@ color_sensor = ColorSensor(Port.S3)
 # 2. Color calibration mode – the robot will help us calibrate the color sensor
 # 3. Automatic mode – the robot will perform the given routine for sorting cubes and building the ordered stack
 ev3.screen.print("Select mode:\n\nLEFT: Manual\nRIGHT: Color Calibration\nCENTER: Automatic")
-print("Select mode:\n\nLEFT: Manual\nRIGHT: Color Calibration\nCENTER: Automatic\n")
+print("[Main] Select mode:\n\nLEFT: Manual\nRIGHT: Color Calibration\nCENTER: Automatic\n")
 given_input = get_input(ev3)
 
 # Manual mode
 if given_input == Button.LEFT:
-    print("Manual mode engaged")
+    print("[Main] Manual mode engaged")
     manual_mode = ManualMode(ev3, base_motor, shoulder_motor, elbow_motor,gripper_motor, shoulder_sonic_sensor, base_touch_sensor,
                              RATIOS)
     manual_mode.run()
 
 # Color calibration mode
 elif given_input == Button.RIGHT:
-    print("Color calibration mode engaged")
+    print("[Main] Color calibration mode engaged")
     color_calibration_mode = ColorCalibrationMethod(ev3, color_sensor)
     color_calibration_mode.run()
 
 # Automatic mode
 elif given_input == Button.CENTER:
-    print("Automatic mode engaged")
+    print("[Main] Automatic mode engaged")
     automatic_mode = AutomaticMode(ev3, base_motor, shoulder_motor, elbow_motor, gripper_motor, base_touch_sensor,
                                    shoulder_sonic_sensor, color_sensor, RATIOS)
     automatic_mode.run()
@@ -66,9 +66,9 @@ elif given_input == Button.CENTER:
 else:
     ev3.screen.clear()
     ev3.screen.print("Invalid input. Exiting...")
-    print("Invalid input. Exiting...")
+    print("[Main] Invalid input. Exiting...")
     ev3.speaker.beep(100, 500)
 
 ev3.screen.clear()
 ev3.screen.print("Program complete!")
-print("Program complete!")
+print("[Main] Program complete!")

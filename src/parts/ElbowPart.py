@@ -44,4 +44,4 @@ class ElbowPart(ArmPart):
         # Reset angle to 0
         self.motor.reset_angle(0)
 
-        print("Calibration of " + self.name + " complete")
+        print("[Elbow] Calibration complete")

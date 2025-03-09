@@ -30,5 +30,5 @@ class ShoulderPart(ArmPart):
         wait(250)
 
         self.motor.reset_angle(0)
-        print("Calibration of " + self.name + " complete")
+        print("[Shoulder] Calibration complete")
         return True
