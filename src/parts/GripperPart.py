@@ -20,7 +20,7 @@ class GripperPart(ArmPart):
         self.motor.hold()
         print("[Gripper] released")
         return True
-    
+
     def calibrate(self):
         # Calibration parameters
         SPEED = 400
@@ -37,28 +37,28 @@ class GripperPart(ArmPart):
 
             current_angle = self.motor.angle()
             angle_difference = abs(current_angle - last_angle)
-            
+
             print("[Gripper] Current angle: {}, Difference: {}".format(current_angle, angle_difference))
-            
+
             if angle_difference < ANGLE_THRESHOLD:
                 tick_count += 1
                 print("[Gripper] Stall detected: {} of {}".format(tick_count, TARGET_TICKS))
             else:
                 tick_count = 0
-                
+
             last_angle = current_angle
 
         self.motor.hold()
-        
+
         # Remove tension from the motor
         self.motor.run_angle(SPEED, TENSION_ANGLE)
-        
+
         # Wait for the motor to debounce
         wait(250)
-        
+
         # Reset angle to 0
         self.motor.reset_angle(0)
         self.motor.hold()
-        
+
         print("[Gripper] calibrated")
         return True

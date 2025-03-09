@@ -1,8 +1,6 @@
 from pybricks.ev3devices import Motor, TouchSensor, UltrasonicSensor, ColorSensor
 from pybricks.hubs import EV3Brick
-from pybricks.tools import wait
 
-from constants import OFFSETS
 from modes.Mode import Mode
 from parts.BasePart import BasePart
 from parts.ElbowPart import ElbowPart
@@ -10,7 +8,6 @@ from parts.GripperPart import GripperPart
 from parts.ShoulderPart import ShoulderPart
 from systems.ColorDetectionSystem import ColorDetectionSystem
 from systems.MoveSystem import MoveSystem
-from utils.kinematics import get_coordinates
 
 
 class AutomaticMode(Mode):
@@ -32,7 +29,8 @@ class AutomaticMode(Mode):
         print("Running Automatic Mode")
         # Initialize the parts
         basePart = BasePart(self.base_motor, self.base_touch_sensor, self.ratios["base"])
-        shoulderPart = ShoulderPart(self.shoulder_motor, self.shoulder_sonic_sensor, self.ratios["shoulder"], length=9.6)
+        shoulderPart = ShoulderPart(self.shoulder_motor, self.shoulder_sonic_sensor, self.ratios["shoulder"],
+                                    length=9.6)
         elbowPart = ElbowPart(self.elbow_motor, self.ratios["elbow"], length=13.5)
         gripperPart = GripperPart(self.gripper_motor)
 

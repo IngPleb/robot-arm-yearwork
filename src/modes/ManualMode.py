@@ -1,4 +1,3 @@
-
 from pybricks.ev3devices import Motor, UltrasonicSensor, TouchSensor
 from pybricks.hubs import EV3Brick
 from pybricks.parameters import Button
@@ -6,9 +5,9 @@ from pybricks.tools import wait
 
 from constants import OFFSETS
 from modes.Mode import Mode
-from parts.GripperPart import GripperPart
 from parts.BasePart import BasePart
 from parts.ElbowPart import ElbowPart
+from parts.GripperPart import GripperPart
 from parts.ShoulderPart import ShoulderPart
 from utils.input import get_input
 from utils.kinematics import get_coordinates
@@ -18,7 +17,8 @@ class ManualMode(Mode):
     min_page = 0
     max_page = 1
 
-    def __init__(self, ev3: EV3Brick, base_motor: Motor, shoulder_motor: Motor, elbow_motor: Motor, gripper_motor: Motor,
+    def __init__(self, ev3: EV3Brick, base_motor: Motor, shoulder_motor: Motor, elbow_motor: Motor,
+                 gripper_motor: Motor,
                  sonic_sensor: UltrasonicSensor, touch_sensor: TouchSensor, ratios):
         super().__init__("Manual")
         self.ev3 = ev3
@@ -127,7 +127,7 @@ class ManualMode(Mode):
             x, y = get_coordinates(shoulder_angle, self.shoulder_part.length, elbow_angle, self.elbow_part.length)
             print("X: ", x, "Y: ", y)
             print("Base angle: ", self.base_part.get_angle())
-            print("Adjusted for errors: X: ", x - 0,8106741107, "Y: ", y + 4,6261295427)
+            print("Adjusted for errors: X: ", x - 0, 8106741107, "Y: ", y + 4, 6261295427)
             print("|--------------|")
             self.ev3.screen.clear()
             self.ev3.screen.print("X: " + str(x) + "\nY: " + str(y))

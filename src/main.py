@@ -45,7 +45,8 @@ given_input = get_input(ev3)
 # Manual mode
 if given_input == Button.LEFT:
     print("[Main] Manual mode engaged")
-    manual_mode = ManualMode(ev3, base_motor, shoulder_motor, elbow_motor,gripper_motor, shoulder_sonic_sensor, base_touch_sensor,
+    manual_mode = ManualMode(ev3, base_motor, shoulder_motor, elbow_motor, gripper_motor, shoulder_sonic_sensor,
+                             base_touch_sensor,
                              RATIOS)
     manual_mode.run()
 

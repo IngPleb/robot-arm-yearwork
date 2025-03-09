@@ -13,7 +13,6 @@ motor.hold()
 # Calibration parameters
 SPEED = 100
 
-
 while True:
     if touch_sensor.pressed():
         break

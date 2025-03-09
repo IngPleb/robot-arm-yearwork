@@ -12,7 +12,7 @@ motor.hold()
 
 # Calibration parameters
 SPEED = 100
-TARGET_TICKS = 3    # can be set to any value between 3-5 or made configurable
+TARGET_TICKS = 3  # can be set to any value between 3-5 or made configurable
 
 tick_count = 0
 
@@ -25,9 +25,9 @@ while tick_count < TARGET_TICKS:
     motor.run(SPEED)
     print("Tick count: " + str(tick_count))
     print("Ultrasonic distance: " + str(distance))
-    
+
     wait(10)
-    
+
 motor.hold()
 
 motor.reset_angle(0)

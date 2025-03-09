@@ -12,31 +12,31 @@ motor.hold()
 # Calibration parameters
 SPEED = 400
 ANGLE_THRESHOLD = 6  # adjust this constant as needed
-TARGET_TICKS = 16     # can be set to any value between 3-5 or made configurable
+TARGET_TICKS = 16  # can be set to any value between 3-5 or made configurable
 TENSION_ANGLE = -500
 
 tick_count = 0
 last_angle = motor.angle()  # initialize last_angle before starting
 while tick_count < TARGET_TICKS:
     motor.run(SPEED)
-    
+
     wait(10)
-    
+
     current_angle = motor.angle()
     angle_difference = abs(current_angle - last_angle)
-    
+
     print("Current angle is: " + str(current_angle))
     print("Angle difference is: " + str(angle_difference))
-    
+
     if angle_difference < ANGLE_THRESHOLD:
         tick_count += 1
         print("Tick count: " + str(tick_count))
     else:
         # Optionally reset tick_count if the movement difference exceeds the threshold
         tick_count = 0
-        
+
     last_angle = current_angle
-    
+
 print("Finished winding up!")
 motor.hold()
 
@@ -49,5 +49,5 @@ motor.reset_angle(0)
 ev3.speaker.beep()
 print("Calibration complete")
 
-#wait(1000)
-#motor.run_angle(100, -300)
+# wait(1000)
+# motor.run_angle(100, -300)

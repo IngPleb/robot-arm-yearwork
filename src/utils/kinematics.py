@@ -1,5 +1,3 @@
-from math import acos, sqrt, atan2, degrees
-
 import math
 
 
@@ -11,6 +9,7 @@ def get_coordinates(shoulder_angle: float, shoulder_length: float, elbow_angle: 
     x = shoulder_length * math.cos(shoulder_rad) + elbow_length * math.cos(shoulder_rad + elbow_rad)
     y = shoulder_length * math.sin(shoulder_rad) + elbow_length * math.sin(shoulder_rad + elbow_rad)
     return x, y
+
 
 def calculate_angles(x, y, l1, l2):
     """
@@ -60,7 +59,7 @@ def calculate_angles(x, y, l1, l2):
     # Convert angles from radians to degrees.
     shoulder_deg_up = math.degrees(theta1_elbow_up)
     elbow_deg_up = math.degrees(theta2_elbow_up)
-    
+
     # This is the second configuration in which we are not interested.
     shoulder_deg_down = math.degrees(theta1_elbow_down)
     elbow_deg_down = math.degrees(theta2_elbow_down)
