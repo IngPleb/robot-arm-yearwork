@@ -23,7 +23,7 @@ class GripperPart(ArmPart):
     
     def calibrate(self):
         # Calibration parameters
-        SPEED = 400  # Same speed as grab()
+        SPEED = 400
         ANGLE_THRESHOLD = 6  # Minimum angle change to detect stalling
         TARGET_TICKS = 10  # Number of consecutive readings with minimal movement
         TENSION_ANGLE = -2  # Small reverse to release tension

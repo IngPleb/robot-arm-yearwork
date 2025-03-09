@@ -114,8 +114,12 @@ class ManualMode(Mode):
     def page_2_actions(self, pressed_button):
         if pressed_button == Button.LEFT:
             self.gripper_part.release()
+            # Safety wait
+            wait(350)
         elif pressed_button == Button.RIGHT:
             self.gripper_part.grab()
+            # Safety wait
+            wait(350)
         elif pressed_button == Button.UP:
             x,y = get_coordinates(self.shoulder_part.get_angle() + OFFSETS["shoulder"], self.shoulder_part.length, self.elbow_part.get_angle() + OFFSETS["elbow"], self.elbow_part.length)
             print("X: ", x, "Y: ", y)
