@@ -45,7 +45,5 @@ class AutomaticMode(Mode):
         move_system = MoveSystem(basePart, shoulderPart, elbowPart)
 
         move_system.move(-13.5, 9.6, 0)
-        move_system.move(-13.5, 5.6, 0)
         print("lol")
-        move_system.move(-13.5, 5.6, 0)
         move_system.move(-16.5, 5.6, 0)

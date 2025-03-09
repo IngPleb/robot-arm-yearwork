@@ -6,6 +6,7 @@ from pybricks.tools import wait
 
 from constants import OFFSETS
 from modes.Mode import Mode
+from parts.GripperPart import GripperPart
 from parts.BasePart import BasePart
 from parts.ElbowPart import ElbowPart
 from parts.ShoulderPart import ShoulderPart
@@ -17,7 +18,7 @@ class ManualMode(Mode):
     min_page = 0
     max_page = 1
 
-    def __init__(self, ev3: EV3Brick, base_motor: Motor, shoulder_motor: Motor, elbow_motor: Motor,
+    def __init__(self, ev3: EV3Brick, base_motor: Motor, shoulder_motor: Motor, elbow_motor: Motor, gripper_motor: Motor,
                  sonic_sensor: UltrasonicSensor, touch_sensor: TouchSensor, ratios):
         super().__init__("Manual")
         self.ev3 = ev3
@@ -32,6 +33,7 @@ class ManualMode(Mode):
         self.shoulder_part = ShoulderPart(self.shoulder_motor, sonic_sensor=sonic_sensor, ratio=ratios["shoulder"],
                                           length=8)
         self.elbow_part = ElbowPart(self.elbow_motor, ratio=ratios["elbow"], length=13.5)
+        self.gripper_part = GripperPart(gripper_motor)
 
         self.pages = {
             0: {
@@ -111,9 +113,9 @@ class ManualMode(Mode):
 
     def page_2_actions(self, pressed_button):
         if pressed_button == Button.LEFT:
-            pass
+            self.gripper_part.release()
         elif pressed_button == Button.RIGHT:
-            pass
+            self.gripper_part.grab()
         elif pressed_button == Button.UP:
             x,y = get_coordinates(self.shoulder_part.get_angle() + OFFSETS["shoulder"], self.shoulder_part.length, self.elbow_part.get_angle() + OFFSETS["elbow"], self.elbow_part.length)
             print("X: ", x, "Y: ", y)
@@ -123,8 +125,7 @@ class ManualMode(Mode):
             # Safety wait
             wait(500)
         elif pressed_button == Button.DOWN:
-            self.shoulder_part.move_to_angle(-55)
-            self.elbow_part.move_to_angle(-90)
+            self.gripper_part.calibrate()
             wait(350)
 
     def run(self):
