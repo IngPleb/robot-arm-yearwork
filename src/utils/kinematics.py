@@ -60,6 +60,8 @@ def calculate_angles(x, y, l1, l2):
     # Convert angles from radians to degrees.
     shoulder_deg_up = math.degrees(theta1_elbow_up)
     elbow_deg_up = math.degrees(theta2_elbow_up)
+    
+    # This is the second configuration in which we are not interested.
     shoulder_deg_down = math.degrees(theta1_elbow_down)
     elbow_deg_down = math.degrees(theta2_elbow_down)
 

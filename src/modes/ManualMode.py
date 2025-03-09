@@ -121,8 +121,13 @@ class ManualMode(Mode):
             # Safety wait
             wait(350)
         elif pressed_button == Button.UP:
-            x,y = get_coordinates(self.shoulder_part.get_angle() + OFFSETS["shoulder"], self.shoulder_part.length, self.elbow_part.get_angle() + OFFSETS["elbow"], self.elbow_part.length)
+            shoulder_angle = self.shoulder_part.get_angle() - OFFSETS["shoulder"]
+            elbow_angle = self.elbow_part.get_angle() - OFFSETS["elbow"]
+            shoulder_angle = -shoulder_angle
+            x, y = get_coordinates(shoulder_angle, self.shoulder_part.length, elbow_angle, self.elbow_part.length)
             print("X: ", x, "Y: ", y)
+            print("Base angle: ", self.base_part.get_angle())
+            print("Adjusted for errors: X: ", x - 0,8106741107, "Y: ", y + 4,6261295427)
             print("|--------------|")
             self.ev3.screen.clear()
             self.ev3.screen.print("X: " + str(x) + "\nY: " + str(y))
