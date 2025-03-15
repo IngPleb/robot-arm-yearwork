@@ -20,22 +20,22 @@ class MoveSystem:
     def move(self, x: float, y: float, base_angle: float, speed: int =100, move_sequentially: bool = False) -> bool:
         # Calculate the angles
         try:
-            shoulder_angle, elbow_angle = calculate_angles(x, y, self.shoulder_part.length, self.elbow_part.length, move_sequentially)
+            shoulder_angle, elbow_angle = calculate_angles(x, y, self.shoulder_part.length, self.elbow_part.length)
         except ValueError as e:
             print("[Move System] Error -", str(e))
             return False  # Target is unreachable
 
         print("[Move System] Calculated angles: shoulder=", shoulder_angle, "°, elbow=", elbow_angle, "°")
 
-        # Apply offsets
         shoulder_angle -= self.shoulder_offset
+            
         elbow_angle -= self.elbow_offset
         shoulder_angle = -shoulder_angle
 
         print("[Move System] Applying offsets: shoulder=", shoulder_angle, "°, elbow=", elbow_angle, "°")
         print("[Move System] Moving to x =", x, ", y =", y, ", base_angle =", base_angle)
 
-        return self.move_to_angle(shoulder_angle, elbow_angle, base_angle, speed)
+        return self.move_to_angle(shoulder_angle, elbow_angle, base_angle, speed, move_sequentially)
 
     def move_to_angle(self, shoulder_angle: float, elbow_angle: float, base_angle: float, speed: int = 100, move_sequentially: bool = False) -> bool:
         # Offsets are not considered here

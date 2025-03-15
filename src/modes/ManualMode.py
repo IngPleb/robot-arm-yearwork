@@ -128,13 +128,12 @@ class ManualMode(Mode):
             # Safety wait
             wait(350)
         elif pressed_button == Button.UP:
-            shoulder_angle = self.shoulder_part.get_angle() - OFFSETS["shoulder"]
-            elbow_angle = self.elbow_part.get_angle() - OFFSETS["elbow"]
+            shoulder_angle = self.shoulder_part.get_angle() + OFFSETS["shoulder"]
+            elbow_angle = self.elbow_part.get_angle() + OFFSETS["elbow"]
             shoulder_angle = -shoulder_angle
             x, y = get_coordinates(shoulder_angle, self.shoulder_part.length, elbow_angle, self.elbow_part.length)
             print("X: ", x, "Y: ", y)
             print("Base angle: ", self.base_part.get_angle())
-            print("Adjusted for errors: X: ", x - 0, 8106741107, "Y: ", y + 4, 6261295427)
             print("|--------------|")
             self.ev3.screen.clear()
             self.ev3.screen.print("X: " + str(x) + "\nY: " + str(y))
@@ -167,8 +166,6 @@ class ManualMode(Mode):
                         if len(coords) >= 3:
                             base_angle = float(coords[2])
 
-                        self.ev3.screen.clear()
-                        self.ev3.screen.print(f"Moving to:\nX: {x}\nY: {y}\nBase: {base_angle}")
 
                         # Execute movement
                         result = self.move_system.move(x, y, base_angle)
@@ -183,11 +180,6 @@ class ManualMode(Mode):
                         self.ev3.screen.print("Invalid format\nin file")
                         self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
 
-            except FileNotFoundError:
-                print("XY_instructions.txt not found")
-                self.ev3.screen.clear()
-                self.ev3.screen.print("XY_instructions.txt\nnot found")
-                self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
             except ValueError:
                 print("Invalid number format in XY_instructions.txt")
                 self.ev3.screen.clear()
@@ -212,9 +204,11 @@ class ManualMode(Mode):
                         if len(angles) >= 3:
                             base_angle = float(angles[2])
 
-                        self.ev3.screen.clear()
-                        self.ev3.screen.print(
-                            f"Moving to angles:\nS: {shoulder_angle}\nE: {elbow_angle}\nB: {base_angle}")
+                        # Replace f-string with regular string concatenation and screen print with console print
+                        print("Moving to angles:")
+                        print("S: " + str(shoulder_angle))
+                        print("E: " + str(elbow_angle))
+                        print("B: " + str(base_angle))
 
                         # Execute movement
                         result = self.move_system.move_to_angle(shoulder_angle, elbow_angle, base_angle)
@@ -225,15 +219,9 @@ class ManualMode(Mode):
                             self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
                     else:
                         print("Invalid format in angle_instructions.txt")
-                        self.ev3.screen.clear()
-                        self.ev3.screen.print("Invalid format\nin file")
+                        print("Invalid format in file")
                         self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
 
-            except FileNotFoundError:
-                print("angle_instructions.txt not found")
-                self.ev3.screen.clear()
-                self.ev3.screen.print("angle_instructions\n.txt not found")
-                self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
             except ValueError:
                 print("Invalid number format in angle_instructions.txt")
                 self.ev3.screen.clear()

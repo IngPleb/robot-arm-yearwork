@@ -63,6 +63,9 @@ def calculate_angles(x, y, l1, l2):
     # This is the second configuration in which we are not interested.
     shoulder_deg_down = math.degrees(theta1_elbow_down)
     elbow_deg_down = math.degrees(theta2_elbow_down)
+    
+    if y < 0:
+        shoulder_deg_up = 360 + shoulder_deg_up
 
     # Return both configurations in degrees.
     return shoulder_deg_up, elbow_deg_up

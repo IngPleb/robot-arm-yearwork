@@ -30,7 +30,7 @@ class AutomaticMode(Mode):
         # Initialize the parts
         basePart = BasePart(self.base_motor, self.base_touch_sensor, self.ratios["base"])
         shoulderPart = ShoulderPart(self.shoulder_motor, self.shoulder_sonic_sensor, self.ratios["shoulder"],
-                                    length=9.6)
+                                    length=8)
         elbowPart = ElbowPart(self.elbow_motor, self.ratios["elbow"], length=13.5)
         gripperPart = GripperPart(self.gripper_motor)
 
@@ -45,4 +45,4 @@ class AutomaticMode(Mode):
         color_detection_system = ColorDetectionSystem(self.color_sensor)
         move_system = MoveSystem(basePart, shoulderPart, elbowPart)
 
-        move_system.move(-13.5, 9.6, 0)
+        move_system.move(-13.5, 8, 0)
