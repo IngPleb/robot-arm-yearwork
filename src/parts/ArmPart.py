@@ -20,6 +20,9 @@ class ArmPart:
     def get_angle(self):
         return self.motor.angle() / self.ratio
 
+    def get_raw_angle(self):
+        return self.motor.angle()
+
     def calibrate(self):
         raise NotImplementedError()
 

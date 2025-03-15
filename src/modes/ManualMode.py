@@ -9,6 +9,7 @@ from parts.BasePart import BasePart
 from parts.ElbowPart import ElbowPart
 from parts.GripperPart import GripperPart
 from parts.ShoulderPart import ShoulderPart
+from systems.MoveSystem import MoveSystem
 from utils.input import get_input
 from utils.kinematics import get_coordinates
 
@@ -35,6 +36,8 @@ class ManualMode(Mode):
         self.elbow_part = ElbowPart(self.elbow_motor, ratio=ratios["elbow"], length=13.5)
         self.gripper_part = GripperPart(gripper_motor)
 
+        self.move_system = MoveSystem(self.base_part, self.shoulder_part, self.elbow_part,)
+
         self.pages = {
             0: {
                 "instructions": "Manual Mode\n\nUP/DOWN: Elbow\nLEFT/RIGHT: Shoulder\nCENTER: Switch page",
@@ -45,8 +48,12 @@ class ManualMode(Mode):
                 "actions": self.page_1_actions
             },
             2: {
-                "instructions": "Manual Mode\n\nLEFT: Gripper O\nRIGHT: Gripper C\nUP: FWK\nCENTER: Switch page",
+                "instructions": "Manual Mode\n\nLEFT: Gripper O\nRIGHT: Gripper C\nUP: FWK\nCENTER: Switch page\nDOWN: Get Raw Angles",
                 "actions": self.page_2_actions
+            },
+            3: {
+                "instructions": "Manual Mode\n\nLeft: EXE XY\nRight: EXE Angles\nCenter: Switch page",
+                "actions": self.page_3_actions
             }
         }
 
@@ -134,8 +141,109 @@ class ManualMode(Mode):
             # Safety wait
             wait(500)
         elif pressed_button == Button.DOWN:
-            self.gripper_part.calibrate()
+            print("Angles:")
+            print("Shoulder: " + str(self.shoulder_part.get_angle()))
+            print("Elbow: " + str(self.elbow_part.get_angle()))
+            print("Base: " + str(self.base_part.get_angle()))
+            print("\nRaw angles:")
+            print("Shoulder: " + str(self.shoulder_part.get_raw_angle()))
+            print("Elbow: " + str(self.elbow_part.get_raw_angle()))
+            print("Base: " + str(self.base_part.get_raw_angle()))
             wait(350)
+
+    def page_3_actions(self, pressed_button):
+        if pressed_button == Button.LEFT:
+            try:
+                with open("XY_instructions.txt", "r") as file:
+                    content = file.read().strip()
+                    coords = content.split()
+
+                    if len(coords) >= 2:
+                        x = float(coords[0])
+                        y = float(coords[1])
+                        base_angle = 0  # Default base angle
+
+                        # Use additional base angle if provided
+                        if len(coords) >= 3:
+                            base_angle = float(coords[2])
+
+                        self.ev3.screen.clear()
+                        self.ev3.screen.print(f"Moving to:\nX: {x}\nY: {y}\nBase: {base_angle}")
+
+                        # Execute movement
+                        result = self.move_system.move(x, y, base_angle)
+
+                        if result:
+                            self.ev3.speaker.beep()
+                        else:
+                            self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
+                    else:
+                        print("Invalid format in XY_instructions.txt")
+                        self.ev3.screen.clear()
+                        self.ev3.screen.print("Invalid format\nin file")
+                        self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
+
+            except FileNotFoundError:
+                print("XY_instructions.txt not found")
+                self.ev3.screen.clear()
+                self.ev3.screen.print("XY_instructions.txt\nnot found")
+                self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
+            except ValueError:
+                print("Invalid number format in XY_instructions.txt")
+                self.ev3.screen.clear()
+                self.ev3.screen.print("Invalid numbers\nin file")
+                self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
+
+            # Safety wait
+            wait(500)
+
+        elif pressed_button == Button.RIGHT:
+            try:
+                with open("angle_instructions.txt", "r") as file:
+                    content = file.read().strip()
+                    angles = content.split()
+
+                    if len(angles) >= 2:
+                        shoulder_angle = float(angles[0])
+                        elbow_angle = float(angles[1])
+                        base_angle = 0  # Default base angle
+
+                        # Use additional base angle if provided
+                        if len(angles) >= 3:
+                            base_angle = float(angles[2])
+
+                        self.ev3.screen.clear()
+                        self.ev3.screen.print(
+                            f"Moving to angles:\nS: {shoulder_angle}\nE: {elbow_angle}\nB: {base_angle}")
+
+                        # Execute movement
+                        result = self.move_system.move_to_angle(shoulder_angle, elbow_angle, base_angle)
+
+                        if result:
+                            self.ev3.speaker.beep()
+                        else:
+                            self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
+                    else:
+                        print("Invalid format in angle_instructions.txt")
+                        self.ev3.screen.clear()
+                        self.ev3.screen.print("Invalid format\nin file")
+                        self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
+
+            except FileNotFoundError:
+                print("angle_instructions.txt not found")
+                self.ev3.screen.clear()
+                self.ev3.screen.print("angle_instructions\n.txt not found")
+                self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
+            except ValueError:
+                print("Invalid number format in angle_instructions.txt")
+                self.ev3.screen.clear()
+                self.ev3.screen.print("Invalid numbers\nin file")
+                self.ev3.speaker.beep(frequency=200, duration=500)  # Error tone
+
+            # Safety wait
+            wait(500)
+
+
 
     def run(self):
         print("Running Manual Mode")

@@ -17,10 +17,10 @@ class MoveSystem:
         self.shoulder_offset = shoulder_offset  # Offset for shoulder calibration
         self.elbow_offset = elbow_offset  # Offset for elbow calibration
 
-    def move(self, x: float, y: float, base_angle: float, speed=100) -> bool:
+    def move(self, x: float, y: float, base_angle: float, speed: int =100, move_sequentially: bool = False) -> bool:
         # Calculate the angles
         try:
-            shoulder_angle, elbow_angle = calculate_angles(x, y, self.shoulder_part.length, self.elbow_part.length)
+            shoulder_angle, elbow_angle = calculate_angles(x, y, self.shoulder_part.length, self.elbow_part.length, move_sequentially)
         except ValueError as e:
             print("[Move System] Error -", str(e))
             return False  # Target is unreachable
@@ -35,22 +35,27 @@ class MoveSystem:
         print("[Move System] Applying offsets: shoulder=", shoulder_angle, "°, elbow=", elbow_angle, "°")
         print("[Move System] Moving to x =", x, ", y =", y, ", base_angle =", base_angle)
 
-        # Start shoulder and elbow movements (non-blocking)
-        self.shoulder_part.move_to_angle(shoulder_angle, speed=speed, wait=False)
-        self.elbow_part.move_to_angle(elbow_angle, speed=speed, wait=False)
+        return self.move_to_angle(shoulder_angle, elbow_angle, base_angle, speed)
+
+    def move_to_angle(self, shoulder_angle: float, elbow_angle: float, base_angle: float, speed: int = 100, move_sequentially: bool = False) -> bool:
+        # Offsets are not considered here
+
+        print("[Move System] Moving to angles: shoulder=", shoulder_angle, "°, elbow=", elbow_angle, "°, base=", base_angle)
+
+        # Move the shoulder and elbow (non-blocking)
+        self.shoulder_part.move_to_angle(shoulder_angle, speed=speed, wait=move_sequentially)
+        self.elbow_part.move_to_angle(elbow_angle, speed=speed, wait=move_sequentially)
 
         # Wait for both movements to complete
         while not (self.shoulder_part.is_done() and self.elbow_part.is_done()):
-            wait(10)  # Small delay to prevent excessive CPU usage
+            wait(10)
 
         # Hold motors in position
         self.shoulder_part.motor.hold()
         self.elbow_part.motor.hold()
 
-        print("[Move System] Shoulder and elbow movements completed")
-
-        # Now move the base
+        # Move the base first
         self.base_part.move_to_angle(base_angle)
 
-        print("[Move System] Movement completed")
+        print("[Move System] Movement to angles completed")
         return True
