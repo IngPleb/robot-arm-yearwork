@@ -31,8 +31,8 @@ gripper_motor = Motor(Port.B)
 
 # Initialize the sensors
 base_touch_sensor = TouchSensor(Port.S4)
-shoulder_sonic_sensor = UltrasonicSensor(Port.S1)
 color_sensor = ColorSensor(Port.S3)
+shoulder_touch_sensor = TouchSensor(Port.S1)
 
 # Now we decide what mode we want the robot to run in
 # 1. Manual mode – control each joint individually for testing
@@ -45,7 +45,7 @@ given_input = get_input(ev3)
 # Manual mode
 if given_input == Button.LEFT:
     print("[Main] Manual mode engaged")
-    manual_mode = ManualMode(ev3, base_motor, shoulder_motor, elbow_motor, gripper_motor, shoulder_sonic_sensor,
+    manual_mode = ManualMode(ev3, base_motor, shoulder_motor, elbow_motor, gripper_motor, shoulder_touch_sensor,
                              base_touch_sensor,
                              RATIOS)
     manual_mode.run()
@@ -60,7 +60,7 @@ elif given_input == Button.RIGHT:
 elif given_input == Button.CENTER:
     print("[Main] Automatic mode engaged")
     automatic_mode = AutomaticMode(ev3, base_motor, shoulder_motor, elbow_motor, gripper_motor, base_touch_sensor,
-                                   shoulder_sonic_sensor, color_sensor, RATIOS)
+                                   shoulder_touch_sensor, color_sensor, RATIOS)
     automatic_mode.run()
 
 # Invalid input

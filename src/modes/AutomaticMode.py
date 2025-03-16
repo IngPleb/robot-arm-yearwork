@@ -1,4 +1,4 @@
-from pybricks.ev3devices import Motor, TouchSensor, UltrasonicSensor, ColorSensor
+from pybricks.ev3devices import Motor, TouchSensor, ColorSensor
 from pybricks.hubs import EV3Brick
 from pybricks.tools import wait
 
@@ -37,7 +37,7 @@ STORAGE_BINS = {
 
 class AutomaticMode(Mode):
     def __init__(self, ev3: EV3Brick, base_motor: Motor, shoulder_motor: Motor, elbow_motor: Motor,
-                 gripper_motor: Motor, base_touch_sensor: TouchSensor, shoulder_sonic_sensor: UltrasonicSensor,
+                 gripper_motor: Motor, base_touch_sensor: TouchSensor, shoulder_touch_sensor: TouchSensor,
                  color_sensor: ColorSensor, ratios):
         super().__init__("Automatic")
         self.ev3 = ev3
@@ -46,7 +46,7 @@ class AutomaticMode(Mode):
         self.elbow_motor = elbow_motor
         self.gripper_motor = gripper_motor
         self.base_touch_sensor = base_touch_sensor
-        self.shoulder_sonic_sensor = shoulder_sonic_sensor
+        self.shoulder_touch_sensor = shoulder_touch_sensor
         self.color_sensor = color_sensor
         self.ratios = ratios
 
@@ -220,7 +220,7 @@ class AutomaticMode(Mode):
         print("Running Automatic Mode with full tower completion logic...")
         # Initialize parts with typical Python naming.
         base_part = BasePart(self.base_motor, self.base_touch_sensor, self.ratios["base"])
-        shoulder_part = ShoulderPart(self.shoulder_motor, self.shoulder_sonic_sensor, self.ratios["shoulder"], length=9.6)
+        shoulder_part = ShoulderPart(self.shoulder_motor, self.shoulder_touch_sensor, self.ratios["shoulder"], length=9.6)
         elbow_part = ElbowPart(self.elbow_motor, self.ratios["elbow"], length=13.5)
         gripper_part = GripperPart(self.gripper_motor)
 

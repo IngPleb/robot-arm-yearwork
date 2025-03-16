@@ -1,4 +1,4 @@
-from pybricks.ev3devices import Motor, UltrasonicSensor, TouchSensor
+from pybricks.ev3devices import Motor, TouchSensor
 from pybricks.hubs import EV3Brick
 from pybricks.parameters import Button
 from pybricks.tools import wait
@@ -20,7 +20,7 @@ class ManualMode(Mode):
 
     def __init__(self, ev3: EV3Brick, base_motor: Motor, shoulder_motor: Motor, elbow_motor: Motor,
                  gripper_motor: Motor,
-                 sonic_sensor: UltrasonicSensor, touch_sensor: TouchSensor, ratios):
+                 shoulder_touch_sensor: TouchSensor, touch_sensor: TouchSensor, ratios):
         super().__init__("Manual")
         self.ev3 = ev3
         self.base_motor = base_motor
@@ -31,12 +31,12 @@ class ManualMode(Mode):
 
         # Creating parts for the manual mode
         self.base_part = BasePart(self.base_motor, ratio=ratios["base"], touch_sensor=touch_sensor)
-        self.shoulder_part = ShoulderPart(self.shoulder_motor, sonic_sensor=sonic_sensor, ratio=ratios["shoulder"],
+        self.shoulder_part = ShoulderPart(self.shoulder_motor, shoulder_touch_sensor, ratio=ratios["shoulder"],
                                           length=8)
         self.elbow_part = ElbowPart(self.elbow_motor, ratio=ratios["elbow"], length=13.5)
         self.gripper_part = GripperPart(gripper_motor)
 
-        self.move_system = MoveSystem(self.base_part, self.shoulder_part, self.elbow_part,)
+        self.move_system = MoveSystem(self.base_part, self.shoulder_part, self.elbow_part, )
 
         self.pages = {
             0: {
@@ -48,11 +48,11 @@ class ManualMode(Mode):
                 "actions": self.page_1_actions
             },
             2: {
-                "instructions": "Manual Mode\n\nLEFT: Gripper O\nRIGHT: Gripper C\nUP: FWK\nCENTER: Switch page\nDOWN: Get Raw Angles",
+                "instructions": "Manual Mode\n\nLEFT: Gripper O\nRIGHT: Gripper C\nUP: FWK\nCENTER: Switch page\nDOWN: Calibrate Gripper",
                 "actions": self.page_2_actions
             },
             3: {
-                "instructions": "Manual Mode\n\nLeft: EXE XY\nRight: EXE Angles\nCenter: Switch page",
+                "instructions": "Manual Mode\n\nLeft: EXE XY\nRight: EXE Angles\nUP: Raw Angles\nCenter: Switch page",
                 "actions": self.page_3_actions
             }
         }
@@ -140,14 +140,7 @@ class ManualMode(Mode):
             # Safety wait
             wait(500)
         elif pressed_button == Button.DOWN:
-            print("Angles:")
-            print("Shoulder: " + str(self.shoulder_part.get_angle()))
-            print("Elbow: " + str(self.elbow_part.get_angle()))
-            print("Base: " + str(self.base_part.get_angle()))
-            print("\nRaw angles:")
-            print("Shoulder: " + str(self.shoulder_part.get_raw_angle()))
-            print("Elbow: " + str(self.elbow_part.get_raw_angle()))
-            print("Base: " + str(self.base_part.get_raw_angle()))
+            self.gripper_part.calibrate()
             wait(350)
 
     def page_3_actions(self, pressed_button):
@@ -165,7 +158,6 @@ class ManualMode(Mode):
                         # Use additional base angle if provided
                         if len(coords) >= 3:
                             base_angle = float(coords[2])
-
 
                         # Execute movement
                         result = self.move_system.move(x, y, base_angle)
@@ -230,8 +222,15 @@ class ManualMode(Mode):
 
             # Safety wait
             wait(500)
-
-
+        elif pressed_button == Button.UP:
+            print("Angles:")
+            print("Shoulder: " + str(self.shoulder_part.get_angle()))
+            print("Elbow: " + str(self.elbow_part.get_angle()))
+            print("Base: " + str(self.base_part.get_angle()))
+            print("\nRaw angles:")
+            print("Shoulder: " + str(self.shoulder_part.get_raw_angle()))
+            print("Elbow: " + str(self.elbow_part.get_raw_angle()))
+            print("Base: " + str(self.base_part.get_raw_angle()))
 
     def run(self):
         print("Running Manual Mode")

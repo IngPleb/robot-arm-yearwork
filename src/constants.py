@@ -5,6 +5,6 @@ RATIOS = {
 }
 
 OFFSETS = {
-    "shoulder": 15,
+    "shoulder": -20,
     "elbow": 185
 }
