@@ -1,3 +1,5 @@
+import time
+
 from pybricks.ev3devices import Motor
 from pybricks.tools import wait
 
@@ -16,10 +18,40 @@ class GripperPart(ArmPart):
         return True
 
     def release(self):
-        self.motor.run_target(400, -97)
+
+        target_angle = -97
+        timeout_seconds = 3  # Set a reasonable timeout
+        start_time = time.time()
+        speed = 400
+
+        # Start the motor moving toward the target
+        direction = -speed if self.motor.angle() > target_angle else speed
+        self.motor.run(direction)
+
+        # Wait until the motor reaches the target or timeout occurs
+        while True:
+            current_angle = self.motor.angle()
+            angle_diff = abs(current_angle - target_angle)
+
+            if angle_diff <= 5:  # 5 degrees tolerance
+                print("[Gripper] Target reached: {}".format(current_angle))
+                break
+
+            if time.time() - start_time > timeout_seconds:
+                print("[Gripper] Warning: Release timed out after {} seconds, diff: {}".format(timeout_seconds,
+                                                                                               angle_diff))
+                break
+
+            wait(10)  # Check every 10ms
+
+        # Make sure to hold the motor regardless of how the loop exited
         self.motor.hold()
+        print("[Gripper] finished running target")
         print("[Gripper] released")
         return True
+
+    def open(self):
+        return self.release()
 
     def calibrate(self):
         # Calibration parameters
@@ -49,9 +81,6 @@ class GripperPart(ArmPart):
             last_angle = current_angle
 
         self.motor.hold()
-
-        # Remove tension from the motor
-        self.motor.run_angle(SPEED, TENSION_ANGLE)
 
         # Wait for the motor to debounce
         wait(250)

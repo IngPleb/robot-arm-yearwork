@@ -2,6 +2,7 @@ from pybricks.ev3devices import Motor, TouchSensor, ColorSensor
 from pybricks.hubs import EV3Brick
 from pybricks.tools import wait
 
+from model.Location import Location
 from modes.Mode import Mode
 from parts.BasePart import BasePart
 from parts.ElbowPart import ElbowPart
@@ -14,18 +15,23 @@ from systems.MoveSystem import MoveSystem
 CUBE_SEQUENCE = ["red", "blue", "green", "yellow"]  # Target stacking order
 
 # Pickup parameters (main cube bin)
-PICKUP_POSITION = (-15, 5, 0)       # Base position above the cube stack (x, y, base_angle)
-PICKUP_DROP_INITIAL = 2             # Initial downward drop to pick up the first cube
-PICKUP_DROP_INCREMENT = 2           # Additional drop for each subsequent cube
+PRE_PICKUP_POSITION = Location(x=-3.9, y=17.2,
+                               base_angle=-185.25)  # Base position above the cube stack (x, y, base_angle)
+
+# Each cube will get a pickup position because the arm is inaccurate as fuck
+PICKUP_POSITIONS = [
+    Location(shoulder_angle=-55, elbow_angle=-74, base_angle=-185.25),
+    Location(shoulder_angle=-96.4, elbow_angle=-52, base_angle=-185.25),
+    Location(shoulder_angle=-76.96, elbow_angle=-48.4, base_angle=-185.25),
+    Location(shoulder_angle=-116.8, elbow_angle=-51, base_angle=-185.25)
+]
 
 # Two-phase color detection parameters
-SAFE_HEIGHT_OFFSET = 5              # How much to raise after pickup for clearance
-COLOR_CHECK_ROTATION = 45           # Phase 1: Base rotation angle for initial color check
-COLOR_CHECK_POSITION = (-15, 7, 45)  # Phase 2: Final color check position (x, y, base_angle)
+PRE_SCAN_POSITION = Location(x= -3.9, y= 17.2, base_angle= -110.75) 
+SCAN_POSITION = Location(shoulder_angle= -50.08, elbow_angle= -47.8, base_angle= -110.75)
 
 # Stacking parameters
-STACK_BASE_POSITION = (-15, 10, 0)   # Base stacking position
-STACK_VERTICAL_INCREMENT = 2         # Additional vertical offset for each cube in the tower
+STACK_BASE_ANGLE = -31.5  # Base angle for stacking
 
 # Storage bins (three bins) now keep a list of cubes (colors) that are stored.
 STORAGE_BINS = {
@@ -58,11 +64,8 @@ class AutomaticMode(Mode):
         self.storage_bins = STORAGE_BINS
 
         # Main bin pickup tracking: count of cubes picked so far (to lower the pickup position)
-        self.pickup_position = PICKUP_POSITION
+        self.pre_pickup_position = PRE_PICKUP_POSITION
         self.cube_pickup_count = 0
-
-        # Base stacking position
-        self.stack_base_position = STACK_BASE_POSITION
 
     def has_cube_in_storage(self, target_color: str) -> bool:
         """Check if any storage bin contains a cube of the target color."""
@@ -76,6 +79,7 @@ class AutomaticMode(Mode):
         Retrieve a cube of the target_color from one of the storage bins.
         The cube is then delivered to the stacking area.
         """
+        return None
         bin_key = None
         for key, bin_data in self.storage_bins.items():
             if target_color in bin_data["cubes"]:
@@ -89,7 +93,8 @@ class AutomaticMode(Mode):
             return False
 
         storage_pos = self.storage_bins[bin_key]["pos"]
-        print("AutomaticMode: Retrieving cube of color " + target_color + " from storage bin " + bin_key + " at " + str(storage_pos))
+        print("AutomaticMode: Retrieving cube of color " + target_color + " from storage bin " + bin_key + " at " + str(
+            storage_pos))
 
         # Move to the storage bin pickup position.
         if not move_system.move(*storage_pos):
@@ -107,7 +112,7 @@ class AutomaticMode(Mode):
             return False
 
         # Deliver to stack.
-        destination = self.compute_dynamic_stack_position()
+        destination = self.get_dynamic_stack_position()
         delivery_safe = (destination[0], destination[1] + SAFE_HEIGHT_OFFSET, destination[2])
         if not move_system.move(*delivery_safe):
             print("AutomaticMode: Error - Cannot reach safe delivery position for stacking.")
@@ -121,22 +126,17 @@ class AutomaticMode(Mode):
         print("AutomaticMode: Retrieved cube delivered to stack.")
         return True
 
-    def compute_effective_pickup_position(self):
-        """
-        Compute the current pickup position from the main bin by lowering the y-coordinate
-        based on how many cubes have been picked.
-        """
-        pickup_x, pickup_y, base_angle = self.pickup_position
-        offset = PICKUP_DROP_INITIAL + self.cube_pickup_count * PICKUP_DROP_INCREMENT
-        return (pickup_x, pickup_y - offset, base_angle)
+    def get_pickup_position(self) -> Location:
+        return PICKUP_POSITIONS[self.cube_pickup_count % len(PICKUP_POSITIONS)]
 
-    def compute_dynamic_stack_position(self):
+    def get_dynamic_stack_position(self) -> Location:
         """
         Compute the stacking position based on the current tower height.
         """
-        base_x, base_y, base_angle = self.stack_base_position
-        dynamic_y = base_y + len(self.current_tower) * STACK_VERTICAL_INCREMENT
-        return (base_x, dynamic_y, base_angle)
+
+        pos = PICKUP_POSITIONS[-(len(self.current_tower))]
+
+        return pos.set_base_angle(STACK_BASE_ANGLE)
 
     def handle_cube_from_main_bin(self, move_system, gripper_part, color_detection_system) -> bool:
         """
@@ -145,9 +145,17 @@ class AutomaticMode(Mode):
         or deposit it in a storage bin.
         """
         # === Pickup Phase ===
-        effective_pickup = self.compute_effective_pickup_position()
-        print("AutomaticMode: Moving to effective pickup position:", effective_pickup)
-        if not move_system.move(*effective_pickup):
+
+        # Moves the arm above to the main bin pickup position.
+        print("AutomaticMode: Moving to main bin pickup position:")
+        move_system.move_to_location(PRE_PICKUP_POSITION)
+
+        # Prepares to grab the cube.
+        gripper_part.open()
+
+        pickup_location = self.get_pickup_position()
+        print("AutomaticMode: Moving to effective pickup position:", pickup_location)
+        if not move_system.move_to_location(pickup_location):
             print("AutomaticMode: Error - Cannot reach pickup position.")
             return False
 
@@ -155,26 +163,22 @@ class AutomaticMode(Mode):
         print("AutomaticMode: Cube grabbed from main bin.")
 
         # Move upward to safe height.
-        pickup_x, pickup_y, pickup_base_angle = effective_pickup
-        safe_position = (pickup_x, pickup_y + SAFE_HEIGHT_OFFSET, pickup_base_angle)
-        print("AutomaticMode: Moving to safe height:", safe_position)
-        if not move_system.move(*safe_position):
+        if not move_system.move_to_location(PRE_PICKUP_POSITION):
             print("AutomaticMode: Error - Cannot reach safe height position.")
             return False
 
         # === Two-Phase Color Detection ===
         # Phase 1: Adjust base rotation while keeping (x, y) fixed.
-        phase1_position = (safe_position[0], safe_position[1], COLOR_CHECK_ROTATION)
-        print("AutomaticMode: Phase 1 - Adjusting base rotation for color check:", phase1_position)
-        if not move_system.move(*phase1_position):
+        print("AutomaticMode: Phase 1 - Adjusting base rotation for color check")
+        if not move_system.move_to_location(PRE_SCAN_POSITION):
             print("AutomaticMode: Error - Cannot adjust base for color detection.")
             return False
 
         wait(250)  # Stabilization delay
 
         # Phase 2: Move to final color check position.
-        print("AutomaticMode: Phase 2 - Moving to final color check position:", COLOR_CHECK_POSITION)
-        if not move_system.move(*COLOR_CHECK_POSITION):
+        print("AutomaticMode: Phase 2 - Moving to final color check position")
+        if not move_system.move_to_location(SCAN_POSITION):
             print("AutomaticMode: Error - Cannot reach final color check position.")
             return False
 
@@ -186,8 +190,8 @@ class AutomaticMode(Mode):
                           if len(self.current_tower) < len(self.cube_sequence) else None)
         if detected_color == expected_color:
             # Correct cube: deliver to stacking area.
-            destination = self.compute_dynamic_stack_position()
             self.current_tower.append(detected_color)
+            destination = self.get_dynamic_stack_position()
             print("AutomaticMode: Cube matches expected color. Stacking at:", destination)
         else:
             # Incorrect cube: deposit it into a storage bin.
@@ -198,17 +202,13 @@ class AutomaticMode(Mode):
             print("AutomaticMode: Cube does not match expected color. Storing in bin", bin_key, "at:", destination)
 
         # Two-phase delivery: move upward first, then to destination.
-        delivery_safe = (destination[0], destination[1] + SAFE_HEIGHT_OFFSET, destination[2])
-        print("AutomaticMode: Moving upward to safe delivery position:", delivery_safe)
-        if not move_system.move(*delivery_safe):
+        move_system.move_to_location(PRE_PICKUP_POSITION.set_base_angle(destination.base_angle))
+        print("AutomaticMode: Moving upward to safe delivery position")
+        if not move_system.move_to_location(destination):
             print("AutomaticMode: Error - Cannot reach safe delivery position.")
             return False
 
-        print("AutomaticMode: Moving to final delivery destination:", destination)
-        if not move_system.move(*destination):
-            print("AutomaticMode: Error - Cannot reach delivery destination.")
-            return False
-
+        print("AutomaticMode: Releasing cube at destination:", destination)
         gripper_part.release()
         print("AutomaticMode: Cube released at destination.")
 
@@ -220,14 +220,15 @@ class AutomaticMode(Mode):
         print("Running Automatic Mode with full tower completion logic...")
         # Initialize parts with typical Python naming.
         base_part = BasePart(self.base_motor, self.base_touch_sensor, self.ratios["base"])
-        shoulder_part = ShoulderPart(self.shoulder_motor, self.shoulder_touch_sensor, self.ratios["shoulder"], length=9.6)
+        shoulder_part = ShoulderPart(self.shoulder_motor, self.shoulder_touch_sensor, self.ratios["shoulder"],
+                                     length=9.6)
         elbow_part = ElbowPart(self.elbow_motor, self.ratios["elbow"], length=13.5)
         gripper_part = GripperPart(self.gripper_motor)
 
         # Calibrate parts.
+        base_part.calibrate()
         elbow_part.calibrate()
         shoulder_part.calibrate()
-        base_part.calibrate()
         gripper_part.calibrate()
 
         # Initialize supporting systems.

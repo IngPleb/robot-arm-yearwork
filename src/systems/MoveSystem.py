@@ -2,6 +2,7 @@
 from pybricks.tools import wait
 
 from constants import OFFSETS
+from model.Location import Location
 from parts.BasePart import BasePart
 from parts.ElbowPart import ElbowPart
 from parts.ShoulderPart import ShoulderPart
@@ -59,3 +60,9 @@ class MoveSystem:
 
         print("[Move System] Movement to angles completed")
         return True
+
+    def move_to_location(self, location: Location, speed: int = 100, move_sequentially: bool = False):
+        if location.is_cartesian():
+            return self.move(location.x, location.y, location.base_angle, speed=speed, move_sequentially=move_sequentially)
+        else:
+            return self.move_to_angle(*location.get_angles(), move_sequentially=move_sequentially)
