@@ -16,7 +16,7 @@ class GripperPart(ArmPart):
         return True
 
     def release(self):
-        self.motor.run_target(400, -90)
+        self.motor.run_target(400, -97)
         self.motor.hold()
         print("[Gripper] released")
         return True
