@@ -21,7 +21,7 @@ PRE_PICKUP_POSITION = Location(x=-3.9, y=17.2,
 # Each cube will get a pickup position because the arm is inaccurate as fuck
 PICKUP_POSITIONS = [
     Location(shoulder_angle=-55, elbow_angle=-74, base_angle=-185.25),
-    Location(shoulder_angle=-96.4, elbow_angle=-52, base_angle=-185.25),
+    Location(shoulder_angle=-54.56, elbow_angle=-59.2, base_angle=-185.25),
     Location(shoulder_angle=-76.96, elbow_angle=-48.4, base_angle=-185.25),
     Location(shoulder_angle=-116.8, elbow_angle=-51, base_angle=-185.25)
 ]
@@ -34,10 +34,12 @@ SCAN_POSITION = Location(shoulder_angle= -50.08, elbow_angle= -47.8, base_angle=
 STACK_BASE_ANGLE = -31.5  # Base angle for stacking
 
 # Storage bins (three bins) now keep a list of cubes (colors) that are stored.
+STORAGE_BIN_BASE_POS = Location(shoulder_angle=-215.5, elbow_angle=-38, base_angle=0) # Base position of the storage bins – this isn't meant to be used directly
+
 STORAGE_BINS = {
-    "A": {"pos": (-20, 5, 0), "cubes": []},
-    "B": {"pos": (-20, 7, 0), "cubes": []},
-    "C": {"pos": (-20, 9, 0), "cubes": []}
+    "A": {"base_angle": -50, "cube": ""},
+    "B": {"base_angle": -70, "cube": ""},
+    "C": {"base_angle": -90, "cube": ""}
 }
 
 
@@ -70,7 +72,7 @@ class AutomaticMode(Mode):
     def has_cube_in_storage(self, target_color: str) -> bool:
         """Check if any storage bin contains a cube of the target color."""
         for bin_data in self.storage_bins.values():
-            if target_color in bin_data["cubes"]:
+            if target_color == bin_data["cube"]:
                 return True
         return False
 
@@ -79,47 +81,37 @@ class AutomaticMode(Mode):
         Retrieve a cube of the target_color from one of the storage bins.
         The cube is then delivered to the stacking area.
         """
-        return None
         bin_key = None
         for key, bin_data in self.storage_bins.items():
-            if target_color in bin_data["cubes"]:
+            if target_color == bin_data["cube"]:
                 bin_key = key
                 # Remove one occurrence of the target cube from the bin.
-                bin_data["cubes"].remove(target_color)
+                bin_data["cube"] = ""
                 break
 
         if bin_key is None:
             print("AutomaticMode: No cube of", target_color, "found in storage.")
             return False
 
-        storage_pos = self.storage_bins[bin_key]["pos"]
-        print("AutomaticMode: Retrieving cube of color " + target_color + " from storage bin " + bin_key + " at " + str(
-            storage_pos))
+        storage_angle = self.storage_bins[bin_key]["base_angle"]
+        move_system.move_to_location(PRE_PICKUP_POSITION.set_base_angle(storage_angle))
+        print("AutomaticMode: Moving to storage bin pickup position:", storage_angle)
+
+        gripper_part.open()
 
         # Move to the storage bin pickup position.
-        if not move_system.move(*storage_pos):
-            print("AutomaticMode: Error - Cannot reach storage bin pickup position.")
-            return False
+        move_system.move_to_location(STORAGE_BIN_BASE_POS.set_base_angle(storage_angle))
 
         # Grab the cube from storage.
         gripper_part.grab()
         print("AutomaticMode: Cube retrieved from storage.")
 
-        # Move to safe height.
-        safe_position = (storage_pos[0], storage_pos[1] + SAFE_HEIGHT_OFFSET, storage_pos[2])
-        if not move_system.move(*safe_position):
-            print("AutomaticMode: Error - Cannot reach safe height from storage bin.")
-            return False
+        destination = self.get_dynamic_stack_position()
+        move_system.move_to_location(PRE_PICKUP_POSITION.set_base_angle(destination.base_angle))
 
         # Deliver to stack.
-        destination = self.get_dynamic_stack_position()
-        delivery_safe = (destination[0], destination[1] + SAFE_HEIGHT_OFFSET, destination[2])
-        if not move_system.move(*delivery_safe):
+        if not move_system.move_to_location(destination):
             print("AutomaticMode: Error - Cannot reach safe delivery position for stacking.")
-            return False
-
-        if not move_system.move(*destination):
-            print("AutomaticMode: Error - Cannot reach final stacking destination.")
             return False
 
         gripper_part.release()
@@ -196,10 +188,21 @@ class AutomaticMode(Mode):
         else:
             # Incorrect cube: deposit it into a storage bin.
             # Select the storage bin with the fewest cubes.
-            bin_key = min(self.storage_bins, key=lambda k: len(self.storage_bins[k]["cubes"]))
-            destination = self.storage_bins[bin_key]["pos"]
-            self.storage_bins[bin_key]["cubes"].append(detected_color)
-            print("AutomaticMode: Cube does not match expected color. Storing in bin", bin_key, "at:", destination)
+            bin_key = None
+            for key, bin_data in self.storage_bins.items():
+                if bin_data["cube"] == "":
+                    bin_key = key
+                    break
+
+            if bin_key is None:
+                print("AutomaticMode: No storage bin available for incorrect cube.")
+                return False
+
+            bin_angle = self.storage_bins[bin_key]["base_angle"]
+            destination = STORAGE_BIN_BASE_POS.set_base_angle(bin_angle)
+
+            self.storage_bins[bin_key]["cube"] = detected_color
+            print("AutomaticMode: Cube does not match expected color. Storing in bin", bin_key)
 
         # Two-phase delivery: move upward first, then to destination.
         move_system.move_to_location(PRE_PICKUP_POSITION.set_base_angle(destination.base_angle))
