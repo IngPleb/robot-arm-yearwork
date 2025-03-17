@@ -20,10 +20,10 @@ PRE_PICKUP_POSITION = Location(x=-3.9, y=17.2,
 
 # Each cube will get a pickup position because the arm is inaccurate as fuck
 PICKUP_POSITIONS = [
-    Location(shoulder_angle=-55, elbow_angle=-74, base_angle=-185.25),
+    Location(shoulder_angle=-53.12, elbow_angle=-70.6, base_angle=-185.25),
     Location(shoulder_angle=-54.56, elbow_angle=-59.2, base_angle=-185.25),
     Location(shoulder_angle=-76.96, elbow_angle=-48.4, base_angle=-185.25),
-    Location(shoulder_angle=-116.8, elbow_angle=-51, base_angle=-185.25)
+    Location(shoulder_angle=-124.32, elbow_angle=-43.2, base_angle=-185.25)
 ]
 
 # Two-phase color detection parameters
@@ -34,7 +34,8 @@ SCAN_POSITION = Location(shoulder_angle= -50.08, elbow_angle= -47.8, base_angle=
 STACK_BASE_ANGLE = -31.5  # Base angle for stacking
 
 # Storage bins (three bins) now keep a list of cubes (colors) that are stored.
-STORAGE_BIN_BASE_POS = Location(shoulder_angle=-215.5, elbow_angle=-38, base_angle=0) # Base position of the storage bins – this isn't meant to be used directly
+STORAGE_BIN_PRE_POSITION = Location(shoulder_angle=-116.6, elbow_angle=-32.6, base_angle=0)
+STORAGE_BIN_BASE_POS = Location(shoulder_angle=-128.96, elbow_angle=-43, base_angle=0) # Base position of the storage bins – this isn't meant to be used directly
 
 STORAGE_BINS = {
     "A": {"base_angle": -50, "cube": ""},
@@ -115,6 +116,7 @@ class AutomaticMode(Mode):
             return False
 
         gripper_part.release()
+        self.current_tower.append(target_color)
         print("AutomaticMode: Retrieved cube delivered to stack.")
         return True
 
